@@ -8,6 +8,7 @@ package scsi
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 
 	"github.com/dswarbrick/smart/ata"
@@ -144,4 +145,57 @@ func (d *SATDevice) PrintSMART(db *drivedb.DriveDb) error {
 	fmt.Printf("\nSMART self-test log: %+v\n", selfTestLog)
 
 	return nil
+}
+
+func (d *SATDevice) GetTemp(db *drivedb.DriveDb) (string, error) {
+	// Standard SCSI INQUIRY command
+	inqResp, err := d.inquiry()
+	if err != nil {
+		return "", errors.New(fmt.Sprintf("SgExecute INQUIRY: %v", err))
+	}
+
+	fmt.Println("SCSI INQUIRY:", inqResp)
+
+	identBuf, err := d.identify()
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println("\nATA IDENTIFY data follows:")
+	fmt.Printf("Serial Number: %s\n", identBuf.SerialNumber())
+	fmt.Println("LU WWN Device Id:", identBuf.WWN())
+	fmt.Printf("Firmware Revision: %s\n", identBuf.FirmwareRevision())
+	fmt.Printf("Model Number: %s\n", identBuf.ModelNumber())
+	fmt.Printf("Rotation Rate: %d\n", identBuf.RotationRate)
+	fmt.Printf("SMART support available: %v\n", identBuf.Word87>>14 == 1)
+	fmt.Printf("SMART support enabled: %v\n", identBuf.Word85&0x1 != 0)
+	fmt.Println("ATA Major Version:", identBuf.ATAMajorVersion())
+	fmt.Println("ATA Minor Version:", identBuf.ATAMinorVersion())
+	fmt.Println("Transport:", identBuf.Transport())
+
+	thisDrive := db.LookupDrive(identBuf.ModelNumber())
+	fmt.Printf("Drive DB contains %d entries. Using model: %s\n", len(db.Drives), thisDrive.Family)
+
+	// FIXME: Check that device supports SMART before trying to read data page
+
+	/*
+	 * SMART READ DATA
+	 */
+	cdb := CDB16{SCSI_ATA_PASSTHRU_16}
+	cdb[1] = 0x08                // ATA protocol (4 << 1, PIO data-in)
+	cdb[2] = 0x0e                // BYT_BLOK = 1, T_LENGTH = 2, T_DIR = 1
+	cdb[4] = ata.SMART_READ_DATA // feature LSB
+	cdb[10] = 0x4f               // low lba_mid
+	cdb[12] = 0xc2               // low lba_high
+	cdb[14] = ata.ATA_SMART      // command
+
+	respBuf := make([]byte, 512)
+
+	if err := d.sendCDB(cdb[:], &respBuf); err != nil {
+		return "", errors.New(fmt.Sprintf("sendCDB SMART READ DATA: %v", err))
+	}
+
+	smart := ata.SmartPage{}
+	binary.Read(bytes.NewBuffer(respBuf[:362]), utils.NativeEndian, &smart)
+	return ata.GetTempRaw(smart, thisDrive)
 }

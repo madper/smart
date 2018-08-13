@@ -226,3 +226,12 @@ func OpenSCSIAutodetect(name string) (Device, error) {
 
 	return &dev, nil
 }
+
+func OpenSCSISAT(name string) (*SATDevice, error) {
+	dev := SCSIDevice{Name: name}
+
+	if err := dev.Open(); err != nil {
+		return nil, err
+	}
+	return &SATDevice{dev}, nil
+}

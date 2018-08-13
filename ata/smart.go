@@ -1,6 +1,7 @@
 package ata
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -295,4 +296,34 @@ func PrintSMARTPage(smart SmartPage, drive drivedb.DriveModel) {
 			attr.Id, conv.Name, attr.Flags, attr.Value, attr.Worst, attr.Reserved, attrType,
 			attrUpdated, formatRawValue(rawValue, conv.Conv))
 	}
+}
+
+func GetTempRaw(smart SmartPage, drive drivedb.DriveModel) (string, error) {
+	fmt.Printf("\nSMART structure version: %d\n", smart.Version)
+	fmt.Printf("ID# ATTRIBUTE_NAME           FLAG     VALUE WORST RESERVED TYPE     UPDATED RAW_VALUE\n")
+
+	for _, attr := range smart.Attrs {
+		var (
+			rawValue uint64
+			conv     drivedb.AttrConv
+		)
+
+		if attr.Id == 0 {
+			break
+		}
+
+		conv, ok := drive.Presets[strconv.Itoa(int(attr.Id))]
+		if ok {
+			rawValue = attr.decodeVendorBytes(conv.Conv)
+		}
+
+		// fmt.Printf("%3d %-24s %#04x   %03d   %03d   %03d      %-8s %-7s %s\n",
+		// attr.Id, conv.Name, attr.Flags, attr.Value, attr.Worst, attr.Reserved, attrType,
+		// attrUpdated, formatRawValue(rawValue, conv.Conv))
+
+		if attr.Id == 194 {
+			return formatRawValue(rawValue, conv.Conv), nil
+		}
+	}
+	return "", errors.New("No temp info here.")
 }
