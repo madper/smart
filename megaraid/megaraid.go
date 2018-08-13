@@ -22,11 +22,11 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"github.com/dswarbrick/smart/ata"
-	"github.com/dswarbrick/smart/drivedb"
-	"github.com/dswarbrick/smart/ioctl"
-	"github.com/dswarbrick/smart/scsi"
-	"github.com/dswarbrick/smart/utils"
+	"github.com/madper/smart/ata"
+	"github.com/madper/smart/drivedb"
+	"github.com/madper/smart/ioctl"
+	"github.com/madper/smart/scsi"
+	"github.com/madper/smart/utils"
 )
 
 const (

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/dswarbrick/smart/drivedb"
+	"github.com/madper/smart/drivedb"
 )
 
 // Individual SMART attribute (12 bytes)

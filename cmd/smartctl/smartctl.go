@@ -15,11 +15,11 @@ import (
 
 	"golang.org/x/sys/unix"
 
-	"github.com/dswarbrick/smart"
-	"github.com/dswarbrick/smart/drivedb"
-	"github.com/dswarbrick/smart/megaraid"
-	"github.com/dswarbrick/smart/nvme"
-	"github.com/dswarbrick/smart/scsi"
+	"github.com/madper/smart"
+	"github.com/madper/smart/drivedb"
+	"github.com/madper/smart/megaraid"
+	"github.com/madper/smart/nvme"
+	"github.com/madper/smart/scsi"
 )
 
 const (
