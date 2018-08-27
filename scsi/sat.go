@@ -149,32 +149,17 @@ func (d *SATDevice) PrintSMART(db *drivedb.DriveDb) error {
 
 func (d *SATDevice) GetTemp(db *drivedb.DriveDb) (string, error) {
 	// Standard SCSI INQUIRY command
-	inqResp, err := d.inquiry()
+	_, err := d.inquiry()
 	if err != nil {
 		return "", errors.New(fmt.Sprintf("SgExecute INQUIRY: %v", err))
 	}
-
-	fmt.Println("SCSI INQUIRY:", inqResp)
 
 	identBuf, err := d.identify()
 	if err != nil {
 		return "", err
 	}
 
-	fmt.Println("\nATA IDENTIFY data follows:")
-	fmt.Printf("Serial Number: %s\n", identBuf.SerialNumber())
-	fmt.Println("LU WWN Device Id:", identBuf.WWN())
-	fmt.Printf("Firmware Revision: %s\n", identBuf.FirmwareRevision())
-	fmt.Printf("Model Number: %s\n", identBuf.ModelNumber())
-	fmt.Printf("Rotation Rate: %d\n", identBuf.RotationRate)
-	fmt.Printf("SMART support available: %v\n", identBuf.Word87>>14 == 1)
-	fmt.Printf("SMART support enabled: %v\n", identBuf.Word85&0x1 != 0)
-	fmt.Println("ATA Major Version:", identBuf.ATAMajorVersion())
-	fmt.Println("ATA Minor Version:", identBuf.ATAMinorVersion())
-	fmt.Println("Transport:", identBuf.Transport())
-
 	thisDrive := db.LookupDrive(identBuf.ModelNumber())
-	fmt.Printf("Drive DB contains %d entries. Using model: %s\n", len(db.Drives), thisDrive.Family)
 
 	// FIXME: Check that device supports SMART before trying to read data page
 
