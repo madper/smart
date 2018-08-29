@@ -299,9 +299,6 @@ func PrintSMARTPage(smart SmartPage, drive drivedb.DriveModel) {
 }
 
 func GetTempRaw(smart SmartPage, drive drivedb.DriveModel) (string, error) {
-	fmt.Printf("\nSMART structure version: %d\n", smart.Version)
-	fmt.Printf("ID# ATTRIBUTE_NAME           FLAG     VALUE WORST RESERVED TYPE     UPDATED RAW_VALUE\n")
-
 	for _, attr := range smart.Attrs {
 		var (
 			rawValue uint64
