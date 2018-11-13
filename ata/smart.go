@@ -259,8 +259,6 @@ func formatRawValue(v uint64, conv string) (s string) {
 }
 
 func PrintSMARTPage(smart SmartPage, drive drivedb.DriveModel) {
-	fmt.Printf("\nSMART structure version: %d\n", smart.Version)
-	fmt.Printf("ID# ATTRIBUTE_NAME           FLAG     VALUE WORST RESERVED TYPE     UPDATED RAW_VALUE\n")
 
 	for _, attr := range smart.Attrs {
 		var (
